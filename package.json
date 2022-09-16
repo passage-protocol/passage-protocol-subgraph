@@ -1,0 +1,27 @@
+{
+  "name": "@passage/subgraph",
+  "license": "UNLICENSED",
+  "version": "1.0.0",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ GITHUB_USERNAME/your-contract",
+    "create-local": "graph create --node http://localhost:8020/ scaffold-eth/your-contract",
+    "remove-local": "graph remove --node http://localhost:8020/ scaffold-eth/your-contract",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 scaffold-eth/your-contract",
+    "lint": "eslint '**/*.{js,ts}' --fix; prettier '**/*.{json,sol,md,js,ts}' --write; ",
+    "lint-ci": "eslint '**/*.{js,ts}' --max-warnings 0; prettier '**/*.{json,sol,md,js,ts}' --check; ",
+    "generate-types": "graphql-codegen --config codegen-subgraph-types.yml"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.29.2",
+    "@graphprotocol/graph-ts": "^0.26.0",
+    "@graphql-codegen/cli": "^2.6.2",
+    "@graphql-codegen/typescript": "^2.4.8"
+  },
+  "devDependencies": {
+    "eslint": "^8.23.0",
+    "@shopify/eslint-plugin-assemblyscript": "^0.1.13",
+    "mustache": "^3.1.0"
+  }
+}

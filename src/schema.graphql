@@ -1,0 +1,142 @@
+# typings for graphql-code-generator, uncomment to generate Typscript types
+# scalar BigInt
+# scalar Bytes
+
+type Member @entity {
+  id: ID! # address
+  passports: [PassportMembership!]! @derivedFrom(field: "member")
+  passportCount: BigInt! # number of passport programs member is in
+  passportRoles: [PassportRoleMember!]! @derivedFrom(field: "member")
+  loyaltyTokens: [LoyaltyTokenOwner!]! @derivedFrom(field: "member")
+  loyaltyRoles: [LoyaltyRoleMember!]! @derivedFrom(field: "member")
+  registryRoles: [RegistryRoleMember!]! @derivedFrom(field: "member")
+  created: BigInt!
+}
+
+type PassportImplementation @entity {
+  id: ID! #
+  index: BigInt!
+  address: Bytes!
+  registry: Registry!
+  created: BigInt!
+}
+
+type LoyaltyImplementation @entity {
+  id: ID! #
+  index: BigInt!
+  address: Bytes!
+  registry: Registry!
+  created: BigInt!
+}
+
+type RegistryRoleMember @entity {
+  id: ID! # roleId_memberAddress
+  member: Member!
+  role: RegistryRole!
+  created: BigInt!
+}
+
+type RegistryRole @entity {
+  id: ID! # role hash
+  registry: Registry
+}
+
+type Registry @entity {
+  id: ID! # address
+  passportCount: BigInt!
+  loyaltyCount: BigInt!
+  latestPassportVersion: BigInt!
+  passportBaseUri: String!
+  passportImplementations: [PassportImplementation!]! @derivedFrom(field: "registry")
+  latestLoyaltyVersion: BigInt!
+  loyaltyBaseUri: String!
+  loyaltyImplementations: [LoyaltyImplementation!]! @derivedFrom(field: "registry")
+  roles: [RegistryRole!]! @derivedFrom(field: "registry")
+  created: BigInt!
+}
+
+type PassportRoleMember @entity {
+  id: ID! # passportId_roleId_memberAddress
+  member: Member!
+  role: PassportRole!
+  created: BigInt!
+}
+
+type PassportRole @entity {
+  id: ID! # passportId_rolehash
+  roleHash: String!
+  passport: Passport
+}
+type PassportMember @entity {
+  id: ID! # passportAddress_memberAddress
+  member: Member!
+  passport: Passport!
+  membershipCount: BigInt!
+  created: BigInt!
+}
+
+type PassportMembership @entity {
+  id: ID! # passportAddress_tokenId
+  tokenId: BigInt!
+  member: Member!
+  passport: Passport!
+  created: BigInt!
+  lastTransferred: BigInt!
+}
+
+type Passport @entity {
+  id: ID! # address
+  implementation: Bytes!
+  name: String!
+  symbol: String!
+  baseUri: String!
+  members: [PassportMembership!]! @derivedFrom(field: "passport")
+  roles: [PassportRole!]! @derivedFrom(field: "passport")
+  supply: BigInt!
+  transferEnabled: Boolean!
+  maxSupply: BigInt!
+  memberCount: BigInt!
+  created: BigInt!
+}
+
+type LoyaltyRoleMember @entity {
+  id: ID! # loyaltyId_roleId_memberAddress
+  member: Member!
+  role: LoyaltyRole!
+  created: BigInt!
+}
+
+type LoyaltyRole @entity {
+  id: ID! # loyaltyId_rolehash
+  roleHash: String!
+  loyalty: Loyalty
+}
+
+type LoyaltyTokenOwner @entity {
+  id: ID! # loyaltyTokenId_memberId
+  amount: BigInt!
+  member: Member!
+  loyaltyToken: LoyaltyToken!
+  created: BigInt!
+}
+
+type LoyaltyToken @entity {
+  id: ID! # loyaltyAddress_tokenIdx
+  tokenIdx: BigInt!
+  name: String!
+  supply: BigInt!
+  maxSupply: BigInt!
+  transferEnabled: Boolean!
+  loyalty: Loyalty!
+  owners: [LoyaltyTokenOwner!]! @derivedFrom(field: "loyaltyToken")
+  created: BigInt!
+}
+
+type Loyalty @entity {
+  id: ID! # address
+  implementation: Bytes!
+  baseUri: String!
+  tokens: [LoyaltyToken!]! @derivedFrom(field: "loyalty")
+  roles: [LoyaltyRole!]! @derivedFrom(field: "loyalty")
+  created: BigInt!
+}

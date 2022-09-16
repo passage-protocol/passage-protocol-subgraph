@@ -1,0 +1,113 @@
+specVersion: 0.0.2
+schema:
+  file: ./src/schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: PassageRegistry
+    network: {{network}}
+    source:
+      address: "{{address}}"
+      abi: PassageRegistry
+      startBlock: {{blockNumber}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Registry
+        - Passport
+        - LoyaltyLedger
+      abis:
+        - name: PassageRegistry
+          file: ./contractDeployments/0/PassageRegistry.json
+      eventHandlers:
+        - event: PassportBaseUriUpdated(string)
+          handler: handlePassportBaseUriUpdated
+        - event: PassportCreated(indexed address)
+          handler: handlePassportCreated
+        - event: PassportImplementationAdded(uint256,address)
+          handler: handlePassportImplementationAdded
+        - event: LoyaltyBaseUriUpdated(string)
+          handler: handleLoyaltyBaseUriUpdated
+        - event: LoyaltyCreated(indexed address)
+          handler: handleLoyaltyCreated
+        - event: LoyaltyLedgerImplementationAdded(uint256,address)
+          handler: handleLoyaltyLedgerImplementationAdded
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+      file: ./src/mappings/registry.ts
+templates:
+  - kind: ethereum/contract
+    name: PassportTemplate
+    network: {{network}}
+    source:
+      abi: Passport
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Passport
+        - Member
+        - PassportMember
+        - PassportMembership
+      abis:
+        - name: Passport
+          file: ./contractDeployments/1/Passport.json
+      eventHandlers:
+        - event: PassportInitialized(address,address,string,string,bool,uint256)
+          handler: handlePassportInitialized
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handlePassportTransfer
+        - event: TransferEnableUpdated(bool)
+          handler: handlePassportTransferEnableUpdated
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: BaseUriUpdated(string)
+          handler: handleBaseUriUpdated
+        - event: MaxSupplyUpdated(uint256)
+          handler: handleMaxSupplyUpdated
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+      file: ./src/mappings/passport.ts
+  - kind: ethereum/contract
+    name: LoyaltyLedgerTemplate
+    network: {{network}}
+    source:
+      abi: LoyaltyLedger
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Loyalty
+        - Member
+        - LoyaltyToken
+        - loyaltyTokenOwner
+      abis:
+        - name: LoyaltyLedger
+          file: ./contractDeployments/0/LoyaltyLedger.json
+      eventHandlers:
+        - event: BaseUriUpdated(string)
+          handler: handleBaseUriUpdated
+        - event: TokenCreated(uint256,string,uint256,bool)
+          handler: handleTokenCreated
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleTransferBatch
+        - event: TransferEnableUpdated(uint256,bool)
+          handler: handleTransferEnableUpdated
+        - event: MaxSupplyUpdated(uint256,uint256)
+          handler: handleMaxSupplyUpdated
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTransferSingle
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+      file: ./src/mappings/loyalty.ts
