@@ -1,4 +1,4 @@
-import { store, BigInt } from "@graphprotocol/graph-ts";
+import { store, BigInt, log } from "@graphprotocol/graph-ts";
 
 import {
   PassportInitialized,
@@ -30,7 +30,7 @@ import {
 } from "./common";
 
 function getOrCreateRole(hash: string, passportId: string): PassportRole {
-  const roleId = passportId + "_" + hash;
+  let roleId = passportId + "_" + hash;
   let role = PassportRole.load(roleId);
 
   if (role == null) {
@@ -48,7 +48,7 @@ export function getOrCreatePassportMember(
   memberAddress: string,
   timestamp: BigInt
 ): PassportMember {
-  const id = passportAddress + "_" + memberAddress;
+  let id = passportAddress + "_" + memberAddress;
   let passportMember = PassportMember.load(id);
 
   if (passportMember == null) {
@@ -72,22 +72,22 @@ function getPassportMembershipId(
 }
 
 export function handleBaseUriUpdated(event: BaseUriUpdated): void {
-  const passport = Passport.load(event.address.toHexString()) as Passport;
+  let passport = Passport.load(event.address.toHexString()) as Passport;
   passport.baseUri = event.params.uri;
   passport.save();
 }
 
 export function handleMaxSupplyUpdated(event: MaxSupplyUpdated): void {
-  const passport = Passport.load(event.address.toHex()) as Passport;
+  let passport = Passport.load(event.address.toHex()) as Passport;
   passport.maxSupply = event.params.maxSupply;
   passport.save();
 }
 
 export function handlePassportInitialized(event: PassportInitialized): void {
-  const registry = Registry.load(
+  let registry = Registry.load(
     event.params.registryAddress.toHexString()
   ) as Registry;
-  const passport = Passport.load(event.address.toHex()) as Passport;
+  let passport = Passport.load(event.address.toHex()) as Passport;
   passport.name = event.params.name;
   passport.symbol = event.params.symbol;
   passport.transferEnabled = event.params.transferEnabled;
@@ -99,24 +99,24 @@ export function handlePassportInitialized(event: PassportInitialized): void {
 }
 
 export function handlePassportTransfer(event: Transfer): void {
-  const from = event.params.from.toHexString();
-  const to = event.params.to.toHexString();
-  const tokenId = event.params.tokenId.toString();
-  const passportAddress = event.address.toHexString();
-  const passportMembershipId = getPassportMembershipId(
-    passportAddress,
-    tokenId
-  );
-  const passport = Passport.load(passportAddress) as Passport;
-  const timestamp = event.block.timestamp;
+  let from = event.params.from.toHexString();
+  let to = event.params.to.toHexString();
+  let tokenId = event.params.tokenId.toString();
+  let passportAddress = event.address.toHexString();
+  let passportMembershipId = getPassportMembershipId(passportAddress, tokenId);
+  let passport = Passport.load(passportAddress) as Passport;
+  let timestamp = event.block.timestamp;
   let passportMembership: PassportMembership;
   let toMember: Member;
   let fromMember: Member;
   let toPassportMember: PassportMember;
   let fromPassportMember: PassportMember;
+  log.info('Handling Passport transfer:from- {} to- {}', [from, to])
 
   if (from == ZERO_ADDRESS_STRING) {
     toMember = getOrCreateMember(to, timestamp);
+    log.info('Member created:{}', [toMember.id])
+
     toPassportMember = getOrCreatePassportMember(
       passportAddress,
       to,
@@ -184,10 +184,15 @@ export function handlePassportTransfer(event: Transfer): void {
     passportMembership.member = toMember.id;
     passportMembership.lastTransferred = timestamp;
     passportMembership.save();
+    if (from == "0x07468b3bc6dec3709c1260ffc5eb4065206c127c") {
+      log.info('Transfer from 0x07468b3bc6dec3709c1260ffc5eb4065206c127c current count:{} -- membership count: {}', [fromMember.passportCount.toString(), fromPassportMember.membershipCount.toString()])
+    }
 
-    fromPassportMember.membershipCount = fromPassportMember.membershipCount.minus(
-      ONE
-    );
+    if (fromPassportMember.membershipCount > ZERO) {
+      fromPassportMember.membershipCount = fromPassportMember.membershipCount.minus(
+        ONE
+      );
+    }
     fromPassportMember.save();
 
     toPassportMember.membershipCount = toPassportMember.membershipCount.plus(
@@ -217,28 +222,28 @@ export function handlePassportTransfer(event: Transfer): void {
 export function handlePassportTransferEnabled(
   event: TransferEnableUpdated
 ): void {
-  const passport = Passport.load(event.address.toHexString()) as Passport;
+  let passport = Passport.load(event.address.toHexString()) as Passport;
   passport.transferEnabled = event.params.transferable;
   passport.save();
 }
 
 export function handleUpgraded(event: Upgraded): void {
-  const passport = Passport.load(event.address.toHex()) as Passport;
+  let passport = Passport.load(event.address.toHex()) as Passport;
   passport.implementation = event.params.implementation;
   passport.save();
 }
 
 export function handleRoleGranted(event: RoleGranted): void {
-  const passport = Passport.load(event.address.toHex()) as Passport;
-  const role = getOrCreateRole(event.params.role.toHexString(), passport.id);
+  let passport = Passport.load(event.address.toHex()) as Passport;
+  let role = getOrCreateRole(event.params.role.toHexString(), passport.id);
 
-  const member = getOrCreateMember(
+  let member = getOrCreateMember(
     event.params.account.toHex(),
     event.block.timestamp
   );
 
-  const roleMemberId = getRoleMemberId(role.id, member.id);
-  const roleMember = new PassportRoleMember(roleMemberId);
+  let roleMemberId = getRoleMemberId(role.id, member.id);
+  let roleMember = new PassportRoleMember(roleMemberId);
   roleMember.role = role.id;
   roleMember.member = member.id;
   roleMember.created = event.block.timestamp;
@@ -246,16 +251,16 @@ export function handleRoleGranted(event: RoleGranted): void {
 }
 
 export function handleRoleRevoked(event: RoleRevoked): void {
-  const passport = Passport.load(event.address.toHex()) as Passport;
+  let passport = Passport.load(event.address.toHex()) as Passport;
 
-  const role = getOrCreateRole(
+  let role = getOrCreateRole(
     event.params.role.toHexString(),
     event.address.toHex()
   );
-  const member = getOrCreateMember(
+  let member = getOrCreateMember(
     event.params.account.toHex(),
     event.block.timestamp
   );
-  const roleMemberId = getRoleMemberId(role.id, member.id);
+  let roleMemberId = getRoleMemberId(role.id, member.id);
   store.remove("PassportRoleMember", roleMemberId);
 }
